@@ -329,12 +329,12 @@ q3_parser_buffer:    .space 80
     		inner_loop:
     			add $t6, $t1, $t3
     			lb $t6, 0($t6)
-    			
     			beq $t5, $t6, parse
     			beq $t6, '\0', continue
     			beq $t6, '\n', continue
     			addi $t3, $t3, 1
     			j inner_loop
+    			
     		
     		parse_last:
     			addi $t9, $zero, 1
@@ -355,15 +355,33 @@ q3_parser_buffer:    .space 80
 				
 				print_complete:
 				   	add $t7, $t2, 1
-					la $a0, q3_new_line
-				   	li $v0, 4
-					syscall
+    					add $t3, $zero, $zero	
+    					add $t4, $t0, $t2	
+    					addi $t4, $t4, 1
+    	  				lb $t5, 0($t4)
+    	  				add $t3, $t3, $zero
+    	  				
+				   	ignore_seperators:
+    						add $t6, $t1, $t3
+    						lb $t6, 0($t6)
+    						beq $t6, '\0', print_new_line
+    						beq $t6, '\n', print_new_line
+    						beq $t5, $t6, done
+    						addi $t3, $t3, 1
+    						j ignore_seperators
+    	  				
+    	  				print_new_line:
+						la $a0, q3_new_line
+				   		li $v0, 4
+						syscall
+					
+					done:
 					beq $t9, 1, reset
-				
+					
+    	  		continue:	
+    				add $t3, $zero, $zero	
+    				addi $t2, $t2, 1
     		
-    		continue:	
-    			add $t3, $zero, $zero	  
-    			addi $t2, $t2, 1
     			j parser_loop
     	
 	j reset
