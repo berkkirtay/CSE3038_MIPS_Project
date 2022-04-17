@@ -194,7 +194,7 @@ buffer:  .space 80
 			j finish_cycle
 			
 			bigger_than_nine:
-				addi $t9, $t9, 55
+				addi $t9, $t9, 55 # 'A' - 10 + $t9
 				li $v0, 11
 				move $a0, $t9
 				syscall
