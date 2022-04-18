@@ -12,7 +12,9 @@ optiontext: 	.asciiz "Please select an option: "
 		.data
 jump_table:  	.word q1, q2, q3, q4, exit
 		.text	
-		
+
+.eqv MATRIX_BUFFER_SIZE 10000
+
 main:	li $v0, 4
 	la $a0, greetingtext
 	syscall
@@ -298,21 +300,21 @@ q3_parser_buffer:    .space 80
 	li $v0, 4
 	la $a0, q3_input
 	syscall
-		
+
 	li $v0, 8           
-    	la $a0, q3_buffer       
+    	la $a0, q3_buffer
     	li $a1, 80
-    	add $t0, $a0, $zero  
+    	add $t0, $a0, $zero
     	syscall
     	
     	li $v0, 4
 	la $a0, q3_parser
 	syscall
 		
-    	li $v0, 8           
-    	la $a0, q3_parser_buffer    
+    	li $v0, 8
+    	la $a0, q3_parser_buffer
     	li $a1, 80
-    	add $t1, $a0, $zero  
+    	add $t1, $a0, $zero
     	syscall
     	
     	# initialize iterator pointers
@@ -321,7 +323,7 @@ q3_parser_buffer:    .space 80
     	add $t7, $zero, $zero # last index tracker
     	
     	parser_loop:
-    	  	add $t4, $t0, $t2	
+    	  	add $t4, $t0, $t2
     	  	lb $t5, 0($t4)
     	  	beq $t5, '\0', parse_last
     		beq $t5, '\n', parse_last
@@ -355,8 +357,8 @@ q3_parser_buffer:    .space 80
 				
 				print_complete:
 				   	add $t7, $t2, 1
-    					add $t3, $zero, $zero	
-    					add $t4, $t0, $t2	
+    					add $t3, $zero, $zero
+    					add $t4, $t0, $t2
     					addi $t4, $t4, 1
     	  				lb $t5, 0($t4)
     	  				add $t3, $t3, $zero
@@ -386,6 +388,62 @@ q3_parser_buffer:    .space 80
     	
 	j reset
 q4:
+	.data
+q4_input:  .asciiz "Input: "
+input_buffer:	.space MATRIX_BUFFER_SIZE
+
+	.text
+	
+	li $v0, 4
+	la $a0, q4_input
+	syscall
+	
+	li $v0, 8       				# take in input
+	la $a0, buffer  				# load byte space into address
+    	li $a1, MATRIX_BUFFER_SIZE			# allocate the byte space for string
+	move $t0, $a0   				# save string to t0
+    	syscall
+	
+	add $t7, $zero, $zero # number of integers
+	
+	lb $t1, 0($t0)
+	
+	blt $t1, '0', loop_begin # checks whether the first character is a number or not
+	bgt $t1, '9', loop_begin
+	
+	add $t7, $t7, 1
+	
+	loop_begin:
+		lb $t1, 0($t0) # t1 is the previous character
+		add $t0, $t0, 1
+		lb $t2, 0($t0) # t2 is the current character
+		
+		j first_check
+		
+		first_check:
+			blt $t1, '0', second_check
+			bgt $t1, '9', second_check
+		
+			j end_check # t1 is a number
+			
+		second_check:
+			blt $t2, '0', end_check
+			bgt $t2, '9', end_check
+			
+			add $t7, $t7, 1
+	
+		end_check:
+		
+		beq $t2, '\n', loop_end
+		beq $t2, '\0', loop_end
+		
+		j loop_begin
+	loop_end:
+
+	li $v0, 1
+    	move $a0, $t7 # t7 stores the number of integer numbers
+    	syscall
+
 	j reset
 	
 exit:	li $v0, 4

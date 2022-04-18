@@ -1,0 +1,10 @@
+Q1 -> ✅
+Q1 -> ✅
+Q1 -> ✅
+Q4 ->
+    Number of integer values are stores in t7 register ✅
+    Required work :
+        # Store those integer values in an array at the same time with counting
+        # String to integer converter function (non-integer terminated)
+        # Find square root of number of integers
+        # Rest is easy
