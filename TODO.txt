@@ -4,7 +4,10 @@ Q1 -> ✅
 Q4 ->
     Number of integer values are stores in t7 register ✅
     Required work :
-        # Store those integer values in an array at the same time with counting
-        # String to integer converter function (non-integer terminated)
-        # Find square root of number of integers
-        # Rest is easy
+        # Store those integer values in an array at the same time with counting ✅
+        # String to integer converter function (non-integer terminated) ✅
+        # Find square root of number of integers ✅
+        # Rest is easy ❌
+            t3 is the pointer to the 1D integer array
+            t7 is the number of elements inside the integer array
+            t4 is the sqrt of t7

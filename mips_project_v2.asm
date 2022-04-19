@@ -13,7 +13,13 @@ optiontext: 	.asciiz "Please select an option: "
 jump_table:  	.word q1, q2, q3, q4, exit
 		.text	
 
-.eqv MATRIX_BUFFER_SIZE 10000
+# example case
+# "1 2 3 4 5 6" length : 11	| byte size : 11
+# 1 2 3 4 5 6 length : 6	| byte size : 24
+# may require MATRIX_BUFFER_SIZE * 3 space for MATRIX_STORAGE_SIZE
+
+.eqv MATRIX_BUFFER_SIZE 10000	# holds matrix input as char
+.eqv MATRIX_STORAGE_SIZE 30000	# holds matrix input as int
 
 main:	li $v0, 4
 	la $a0, greetingtext
@@ -389,8 +395,10 @@ q3_parser_buffer:    .space 80
 	j reset
 q4:
 	.data
+	
 q4_input:  .asciiz "Input: "
 input_buffer:	.space MATRIX_BUFFER_SIZE
+integer_array:	.space MATRIX_STORAGE_SIZE
 
 	.text
 	
@@ -399,12 +407,15 @@ input_buffer:	.space MATRIX_BUFFER_SIZE
 	syscall
 	
 	li $v0, 8       				# take in input
-	la $a0, buffer  				# load byte space into address
-    	li $a1, MATRIX_BUFFER_SIZE			# allocate the byte space for string
-	move $t0, $a0   				# save string to t0
+	la $a0, buffer
+    	li $a1, MATRIX_BUFFER_SIZE
+	move $t0, $a0   				# save char array's pointer value to t0
     	syscall
 	
+	la $t3, integer_array	# save integer array's pointer value to t3
+	
 	add $t7, $zero, $zero # number of integers
+	add $t8, $t3, $zero # array pointer copy
 	
 	lb $t1, 0($t0)
 	
@@ -412,6 +423,8 @@ input_buffer:	.space MATRIX_BUFFER_SIZE
 	bgt $t1, '9', loop_begin
 	
 	add $t7, $t7, 1
+	lb $t2, 0($t0)
+	j count_begin
 	
 	loop_begin:
 		lb $t1, 0($t0) # t1 is the previous character
@@ -432,6 +445,44 @@ input_buffer:	.space MATRIX_BUFFER_SIZE
 			
 			add $t7, $t7, 1
 	
+		add $t4, $zero, $zero
+		count_begin:
+			add $t5, $t0, $t4
+			lb $t5, 0($t5)
+			blt $t5, '0', count_end
+			bgt $t5, '9', count_end
+			add $t4, $t4, 1
+			j count_begin
+		count_end:
+			
+		add $s0, $zero, $zero # loop counter
+		add $s1, $zero, $zero # summation
+		add $t9, $t4, $zero
+		
+		string_to_decimal:
+			add $t5, $t9, $zero
+			add $t6, $zero, 1
+			pow10_loop:
+				add $t5, $t5, -1
+				ble $t5, 0, pow10_end
+				mul $t6, $t6, 10
+				j pow10_loop
+			pow10_end:
+			
+			add $t9, $t9, -1
+			
+			add $s2, $t0, $s0
+			lb $s2, 0($s2)
+			add $s2, $s2, -48 # 48 : '0'
+			mul $t6, $t6, $s2
+			add $s1, $s1, $t6
+			
+			add $s0, $s0, 1
+			blt $s0, $t4, string_to_decimal		
+			
+			sw $s1, 0($t8)
+			add $t8, $t8, 4
+			
 		end_check:
 		
 		beq $t2, '\n', loop_end
@@ -440,10 +491,23 @@ input_buffer:	.space MATRIX_BUFFER_SIZE
 		j loop_begin
 	loop_end:
 
-	li $v0, 1
-    	move $a0, $t7 # t7 stores the number of integer numbers
-    	syscall
+	add $t4, $zero, 1
+	blt $t7, 2, sqrt_end
+	
+	sqrt_begin:
+		add $t4, $t4, 1
+		mul $t5, $t4, $t4
+		bne $t5, $t7, sqrt_begin
+	sqrt_end:
 
+	# integer array pointer : t3
+	# number of elements inside of the array : t7
+	# sqrt of t7 : t4
+
+	### -----------------------------
+	# CONTINUE
+	### -----------------------------
+	
 	j reset
 	
 exit:	li $v0, 4
