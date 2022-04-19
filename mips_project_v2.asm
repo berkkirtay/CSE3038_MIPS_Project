@@ -26,6 +26,7 @@ main:	li $v0, 4
 	syscall
 	j  menu
 
+	# we need to reset register for each menu call
 reset:
 	add $s0, $zero, $zero
 	add $s1, $zero, $zero
@@ -50,7 +51,7 @@ reset:
 	
 	j menu
 
-menu:	li $v0, 4	# print string
+menu:	li $v0, 4	# print main menu strings
 	la $a0, menutext
 	syscall
 	
@@ -87,7 +88,7 @@ menu:	li $v0, 4	# print string
 # convert number
 q1:    
 	 .data
-input:   .asciiz "\nInput: "
+input:   .asciiz "Input: "
 type:    .asciiz "Type: "
 output:  .asciiz "Output: "
 buffer:  .space 80
@@ -117,7 +118,8 @@ buffer:  .space 80
 	addi $t6, $t6, 0
 	addi $t7, $t7, 8
 	
-	char_counter:
+	# count the number of characters
+	char_counter: 
 		add $t5, $t0, $t3
 		lb $t5, 0($t5)
 		beq $t5, 0, after_counter
@@ -125,7 +127,7 @@ buffer:  .space 80
 		addi $t3, $t3, 1
 		j char_counter
 	
-	# set conditions for types:
+	# set conditions for types: (Type 1 and Type 2)
 	after_counter:
 		addi $t3, $t3, -1
 		beq $t1, 2, second_type_init
@@ -137,7 +139,8 @@ buffer:  .space 80
 			syscall
 			add $t6, $zero, $zero 
 			j second_type
-	
+			
+	# Convert binary input to decimal
 	first_type:	
 		beq $t3, -1, first_type_result
 		add $t5, $t0, $t3
@@ -175,6 +178,7 @@ buffer:  .space 80
 		
 		j reset
 		
+	# Convert binary input to hex
 	second_type:
 		add $t8, $t0, $t6
 		addi $t6, $t6, 1 
@@ -194,7 +198,9 @@ buffer:  .space 80
 		sra $t7, $t7, 1
 		j second_type
 
-		convert_to_hex:
+		convert_to_hex: 
+			# if the number is bigger than 9 then convert it 
+			# to a hex letter by adding integer value of letter A.
 			bge $t9, 10, bigger_than_nine
 			li $v0, 1
 			move $a0, $t9
@@ -202,7 +208,7 @@ buffer:  .space 80
 			j finish_cycle
 			
 			bigger_than_nine:
-				addi $t9, $t9, 55 # 'A' - 10 + $t9
+				addi $t9, $t9, 55 # $t9 ='A' - 10 + $t9
 				li $v0, 11
 				move $a0, $t9
 				syscall
@@ -215,7 +221,7 @@ buffer:  .space 80
 	j reset
 q2:
 	 .data
-q2_first_num:    .asciiz "\nEnter the first numerator: "
+q2_first_num:    .asciiz "Enter the first numerator: "
 q2_first_den:    .asciiz "Enter the first denominator: "
 q2_second_num:	 .asciiz "Enter the second numerator: "
 q2_second_den:	 .asciiz "Enter the second denominator: "
@@ -260,7 +266,7 @@ q2_symbol:	 .asciiz "/"
 	mul $t6, $t2, $t1
 	add $t6, $t6, $t5
 	 
-	  # $t6 / $t4 
+	# $t6 / $t4 
 	add $t2, $t4, $zero
 	add $t3, $t6, $zero
 			
@@ -295,11 +301,11 @@ q2_symbol:	 .asciiz "/"
 	j reset
 q3:
 	 .data
-q3_input:     	     .asciiz "\nInput text: "
+q3_input:     	     .asciiz "Input text: "
 q3_parser:    	     .asciiz "Parser characters: "
 q3_output:    	     .asciiz "Output: "
 q3_new_line:         .asciiz "\n"
-q3_buffer:    	     .space 80
+q3_buffer:    	     .space 200
 q3_parser_buffer:    .space 80
 	 .text	
 	 
@@ -309,7 +315,7 @@ q3_parser_buffer:    .space 80
 
 	li $v0, 8           
     	la $a0, q3_buffer
-    	li $a1, 80
+    	li $a1, 200
     	add $t0, $a0, $zero
     	syscall
     	
@@ -334,6 +340,7 @@ q3_parser_buffer:    .space 80
     	  	beq $t5, '\0', parse_last
     		beq $t5, '\n', parse_last
     		
+    		# iterate until a null terminator character
     		inner_loop:
     			add $t6, $t1, $t3
     			lb $t6, 0($t6)
@@ -343,13 +350,13 @@ q3_parser_buffer:    .space 80
     			addi $t3, $t3, 1
     			j inner_loop
     			
-    		
     		parse_last:
     			addi $t9, $zero, 1
     			
     		parse:	
     			add $t5, $zero, $zero # print iterator
     			
+    			# iterate until encountering a parser character
     			print:
     				add $t8, $t5, $t7
     				add $t8, $t0, $t8
@@ -361,6 +368,7 @@ q3_parser_buffer:    .space 80
 				addi $t5, $t5, 1
 				j print
 				
+				# print substring
 				print_complete:
 				   	add $t7, $t2, 1
     					add $t3, $zero, $zero
@@ -369,6 +377,7 @@ q3_parser_buffer:    .space 80
     	  				lb $t5, 0($t4)
     	  				add $t3, $t3, $zero
     	  				
+    	  				# ignore new lines for seperator letters
 				   	ignore_seperators:
     						add $t6, $t1, $t3
     						lb $t6, 0($t6)
