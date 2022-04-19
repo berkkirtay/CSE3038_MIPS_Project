@@ -407,7 +407,7 @@ q4:
 	
 q4_input:  .asciiz "Input: "
 input_buffer:	.space MATRIX_BUFFER_SIZE
-integer_array:	.space MATRIX_STORAGE_SIZE
+integer_array:	.word MATRIX_STORAGE_SIZE
 
 	.text
 	
@@ -416,7 +416,7 @@ integer_array:	.space MATRIX_STORAGE_SIZE
 	syscall
 	
 	li $v0, 8       				# take in input
-	la $a0, buffer
+	la $a0, input_buffer
     	li $a1, MATRIX_BUFFER_SIZE
 	move $t0, $a0   				# save char array's pointer value to t0
     	syscall
