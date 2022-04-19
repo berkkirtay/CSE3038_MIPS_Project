@@ -504,9 +504,92 @@ integer_array:	.space MATRIX_STORAGE_SIZE
 	# number of elements inside of the array : t7
 	# sqrt of t7 : t4
 
-	### -----------------------------
-	# CONTINUE
-	### -----------------------------
+	div $t8, $t4, 2
+
+	add $t1, $zero, $zero # x
+	add $t2, $zero, $zero # y
+	add $t5, $zero, $zero # counter
+	
+	mult_begin1:
+	
+	add $t6, $zero, $zero
+	add $t0, $zero, 1 # multiplication result
+	add $s2, $zero, 1		
+
+	sweep_begin1:
+		mul $s0, $t2, $t4
+		add $s0, $s0, $t1
+		mul $s0, $s0, 4
+		add $s0, $s0, $t3
+		lw $s1, 0($s0)
+		mul $t0, $t0, $s1
+		
+		add $t1, $t1, 1
+		add $t2, $t2, $s2
+		mul $s2, $s2, -1
+		
+		blt $t1, $t4, sweep_begin1	
+	sweep_end1:
+	
+	li $v0, 1
+    	move $a0, $t0
+    	syscall
+	
+	li $v0 11
+    	li $a0 ' '
+    	syscall
+	
+	add $t5, $t5, 1
+	add $t1, $zero, $zero
+	add $t2, $t2, 2
+	blt $t5, $t8, mult_begin1
+	
+	mult_end1:
+	
+	li $v0 11
+    	li $a0 '\n'
+    	syscall
+	
+	
+	add $t1, $zero, 1 # x
+	add $t2, $zero, $zero # y
+	add $t5, $zero, $zero # counter
+	
+	mult_begin2:
+	
+	add $t6, $zero, $zero
+	add $t0, $zero, 1 # multiplication result
+	add $s2, $zero, -1		
+
+	sweep_begin2:
+		mul $s0, $t2, $t4
+		add $s0, $s0, $t1
+		mul $s0, $s0, 4
+		add $s0, $s0, $t3
+		lw $s1, 0($s0)
+		mul $t0, $t0, $s1
+		
+		add $t1, $t1, $s2
+		add $t2, $t2, 1
+		mul $s2, $s2, -1
+		
+		blt $t2, $t4, sweep_begin2	
+	sweep_end2:
+	
+	li $v0, 1
+    	move $a0, $t0
+    	syscall
+	
+	li $v0 11
+    	li $a0 ' '
+    	syscall
+	
+	add $t5, $t5, 1
+	add $t1, $t1, 2
+	add $t2, $zero, $zero
+	blt $t5, $t8, mult_begin2
+	
+	mult_end2:
 	
 	j reset
 	
