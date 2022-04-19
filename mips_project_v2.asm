@@ -519,7 +519,7 @@ integer_array:	.space MATRIX_STORAGE_SIZE
 	sweep_begin1:
 		mul $s0, $t2, $t4
 		add $s0, $s0, $t1
-		mul $s0, $s0, 4
+		mul $s0, $s0, 4  # multiply with integer size
 		add $s0, $s0, $t3
 		lw $s1, 0($s0)
 		mul $t0, $t0, $s1
@@ -595,7 +595,7 @@ integer_array:	.space MATRIX_STORAGE_SIZE
 	
 exit:	li $v0, 4
 		.data
-exiting_text:   .asciiz "Exiting...\n"
+exiting_text:   .asciiz "Program ends. Bye :)\n"
 		.text	
 	la $a0, exiting_text
 	syscall
